@@ -2,10 +2,12 @@ const cors = require("cors")
 const express = require("express")
 const bodyParser = require('body-parser')
 const jwt = require('jsonwebtoken')
+const rug = require('random-username-generator');
 
 const app = express()
 const PORT = process.env.PORT || 3001
 
+let users = {};
 app.use(function (req, res, next) {
    //res.setHeader('Content-Security-Policy', "default-src 'self'; font-src 'self'; img-src 'self'; script-src 'self'; style-src 'self'; frame-src 'self'");
    next();
@@ -24,15 +26,34 @@ app.get("/", (request ,response)=>{
 
 app.get("/registerscore", (req ,res)=>{
    headers={"http_status":200, "cache-control":  "no-cache"}
-   body={"name": req.query.name, "score":req.query.score}
-   
-   //Fattas kod för att spara i en dictionary
-   res.status(200).send(body)
+   let user = req.query.user
+   let score = req.query.score
+   users[user] = score
+   res.status(200).send({"status":"success"})
+})
+
+app.get("/post", (req ,res)=>{
+   headers={"http_status":200, "cache-control":  "no-cache"}
+   let user = req.body.user;
+   let score = req.body.score;
+   users[user] = score
+   res.status(200).send({"status":"success"})
+})
+
+app.get("/highscores", (req ,res)=>{
+   headers={"http_status":200, "cache-control":  "no-cache"}
+   res.status(200).send(users)
 })
 
 app.post('/echo', (req, res) => {
    console.log(JSON.stringify(req.body))
    res.status(200).send(req.body)
+});
+
+app.get('/auth', (req, res) => {
+   let user = rug.generate();
+   users[user] = 0
+   res.status(200).send({"user":user})
 });
 
 app.post('/auth', (req, res) => {
@@ -53,14 +74,6 @@ app.post('/auth', (req, res) => {
       res.status(200).send({"STATUS":"FAILURE"})
    }
 });
-
-app.get("/higscore", (req ,res)=>{
-   headers={"http_status":200, "cache-control":  "no-cache"}
-   body=[{"name": "nisse", "score":"1000"}, {"name": "olle", "score":"1001"}, {"name": "pelle", "score":"3000"}]
-   //Istället för att hårdkoda, läs ut från dictionary
-   
-   res.status(200).send(body)
-})
 
 app.get("/football", (req ,res)=>{
    headers={"http_status":200, "cache-control":  "no-cache"}
